@@ -1,3 +1,10 @@
+;; Helper commands to make screencasts with ffmpeg and stumpwm
+;;
+;; Maintainer: Futuro
+;; License: GPLv3
+
+(in-package :stumpwm)
+
 (defcommand screencast
     (winsize preset filename display)
     ((:string "Window Size: ")
