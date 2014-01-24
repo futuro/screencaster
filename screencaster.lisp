@@ -20,10 +20,10 @@
 		t)))
 
 (defcommand screencast
-    (winsize preset filename display)
+    (winsize preset vid-filename display)
     ((:string "Window Size: ")
      (:string "FFMPeg preset: ")
-     (:string "Filename: ")
+     (:string "Vid-Filename: ")
      (:string "Display: "))
   "Start or stop a screencast"
   (let ((w-size (if *interactivep*
@@ -32,12 +32,13 @@
 	(vid-preset (if *interactivep*
 			(cadr *command-hash*)
 			preset))
-	(cast-name (if *interactivep*
+	(vid-name (if *interactivep*
 		       (caddr *command-hash*)
-		       filename))
+		       vid-filename))
 	(x-display (if *interactivep*
 		       (caddr *command-hash*)
-		       display)))
+		       display))
+	(pulse-monitor (find-pulse-monitor)))
     (if
      (equalp 0 (sb-ext::process-exit-code
 		(sb-ext::run-program "/usr/bin/pgrep" (list "-f" "ffmpeg.*screencasts"))))
@@ -46,14 +47,15 @@
        (sb-ext::run-program "/usr/bin/pkill" (list "-15" "-f" "ffmpeg.*screencasts")))
 
      (progn
-       (message "~28<Beginning screencast.~>~%Video Geometry: ~A~%Video Preset: ~A~%Filename: ~A~%X Display: ~A"
-		w-size vid-preset cast-name x-display)
+       (message "~28<Beginning screencast.~>~%Video Geometry: ~A~%Video Preset: ~A~%Vid-Filename: ~A~%X Display: ~A"
+		w-size vid-preset vid-name x-display)
        (run-shell-command
 	(concatenate 'string
 		     "ffmpeg -f x11grab -s " w-size
-		     " -i " x-display " -f alsa -i pulse "
+		     " -i " x-display
+		     " -f pulse -i " pulse-monitor
 		     " -c:v libx264 -preset " vid-preset
-		     " -c:a libvorbis ~/screencasts/" cast-name))))))
+		     " -c:a libvorbis ~/screencasts/" vid-name))))))
 
 (defcommand quickcast () ()
   "Start a screencast with certain defaults"
