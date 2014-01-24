@@ -57,18 +57,19 @@
 
 (defcommand quickcast () ()
   "Start a screencast with certain defaults"
-  (let ((win-geometry
+  (let* ((win-geometry
 	 (format nil "~Ax~A"
-		 (window-width (current-window))
-		 (window-height (current-window))))
-	(filename (multiple-value-bind
+		 (screen-width (current-screen))
+		 (screen-height (current-screen))))
+	(date (multiple-value-bind
 			(second minute hour date month year)
 		      (get-decoded-time)
-		    (format nil "cast_~2,'0d:~2,'0d:~2,'0d_~2,'0d-~d-~d.mkv"
+		    (format nil "~2,'0d:~2,'0d:~2,'0d_~2,'0d-~d-~d.mkv"
 			    hour
 			    minute
 			    second
 			    date
 			    month
-			    year))))
+			    year))
+	  (filename (format nil "screen_~A" date))))
     (screencast win-geometry "ultrafast" filename ":0.0")))
