@@ -5,6 +5,20 @@
 
 (in-package :stumpwm)
 
+(defun find-pulse-monitor ()
+  "Find the first monitor pulse audio defines."
+  ;; XXX I have no idea if this is robust or not, but it probably isn't
+  (string-trim '(#\Newline)
+	       (run-shell-command "/usr/bin/pactl list sources |awk '/Name.*monitor/ {print $2}'" t)))
+
+(defun find-pulse-mic ()
+  "Find the first mic pulse audio defines."
+  ;; XXX I have no idea if this is robust or not, but it probably isn't
+  (string-trim '(#\Newline)
+	       (run-shell-command
+		"/usr/bin/pactl list sources |awk '(/Name.*/ && $0 !~ /Name.*monitor/) {print $2}'"
+		t)))
+
 (defcommand screencast
     (winsize preset filename display)
     ((:string "Window Size: ")
