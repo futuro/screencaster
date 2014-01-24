@@ -50,12 +50,12 @@
 	(concatenate 'string
 		     "ffmpeg -f x11grab -s " w-size
 		     " -i " x-display
-		     " -c:v libx264 "
+		     " -c:v libx264 -preset ultrafast "
 		     " -an -map 0 ~/screencasts/video_" cast-id ".mp4 "
 		     " -f pulse -i " pulse-monitor
-		     " -c:a libvorbis -vn -map 1 ~/screencasts/internal_" cast-id ".ogg"
+		     " -c:a flac -vn -map 1 ~/screencasts/internal_" cast-id ".flac"
 		     " -f pulse -i " pulse-mic
-		     " -c:a libvorbis -vn -map 2 ~/screencasts/mic_" cast-id ".ogg"))))))
+		     " -c:a flac -vn -map 2 ~/screencasts/mic_" cast-id ".flac"))))))
 
 (defcommand quickcast () ()
   "Start a screencast with certain defaults"
