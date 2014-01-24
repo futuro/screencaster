@@ -20,25 +20,22 @@
 		t)))
 
 (defcommand screencast
-    (winsize preset vid-filename display)
+    (winsize screencast-id display)
     ((:string "Window Size: ")
-     (:string "FFMPeg preset: ")
-     (:string "Vid-Filename: ")
+     (:string "Screencast ID: ")
      (:string "Display: "))
   "Start or stop a screencast"
   (let ((w-size (if *interactivep*
 		    (car *command-hash*)
 		    winsize))
-	(vid-preset (if *interactivep*
-			(cadr *command-hash*)
-			preset))
-	(vid-name (if *interactivep*
+	(cast-id (if *interactivep*
 		       (caddr *command-hash*)
-		       vid-filename))
+		       screencast-id))
 	(x-display (if *interactivep*
 		       (caddr *command-hash*)
 		       display))
-	(pulse-monitor (find-pulse-monitor)))
+	(pulse-monitor (find-pulse-monitor))
+	(pulse-mic (find-pulse-mic)))
     (if
      (equalp 0 (sb-ext::process-exit-code
 		(sb-ext::run-program "/usr/bin/pgrep" (list "-f" "ffmpeg.*screencasts"))))
@@ -47,15 +44,18 @@
        (sb-ext::run-program "/usr/bin/pkill" (list "-15" "-f" "ffmpeg.*screencasts")))
 
      (progn
-       (message "~28<Beginning screencast.~>~%Video Geometry: ~A~%Video Preset: ~A~%Vid-Filename: ~A~%X Display: ~A"
-		w-size vid-preset vid-name x-display)
+       (message "~28<Beginning screencast.~>~%Video Geometry: ~A~%Screencast-Id: ~A~%X Display: ~A"
+		w-size cast-id x-display)
        (run-shell-command
 	(concatenate 'string
 		     "ffmpeg -f x11grab -s " w-size
 		     " -i " x-display
+		     " -c:v libx264 "
+		     " -an -map 0 ~/screencasts/video_" cast-id ".mkv "
 		     " -f pulse -i " pulse-monitor
-		     " -c:v libx264 -preset " vid-preset
-		     " -c:a libvorbis ~/screencasts/" vid-name))))))
+		     " -c:a libvorbis -vn -map 1 ~/screencasts/internal_" cast-id ".ogg"
+		     " -f pulse -i " pulse-mic
+		     " -c:a libvorbis -vn -map 2 ~/screencasts/mic_" cast-id ".ogg"))))))
 
 (defcommand quickcast () ()
   "Start a screencast with certain defaults"
@@ -66,12 +66,12 @@
 	(date (multiple-value-bind
 			(second minute hour date month year)
 		      (get-decoded-time)
-		    (format nil "~2,'0d:~2,'0d:~2,'0d_~2,'0d-~d-~d.mkv"
+		    (format nil "~2,'0d:~2,'0d:~2,'0d_~2,'0d-~d-~d"
 			    hour
 			    minute
 			    second
 			    date
 			    month
-			    year))
-	  (filename (format nil "screen_~A" date))))
-    (screencast win-geometry "ultrafast" filename ":0.0")))
+			    year)))
+	 (cast-id (format nil "~A" date)))
+    (screencast win-geometry cast-id ":0.0")))
